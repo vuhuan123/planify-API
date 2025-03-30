@@ -1,32 +1,33 @@
-/**
- * Updated by trungquandev.com's author on August 17 2023
- * YouTube: https://youtube.com/@trungquandev
- * "A bit of fragrance clings to the hand that gives flowers!"
- */
-
+/* eslint-disable no-console */
 import express from 'express'
-import { mapOrder } from '~/utils/sorts.js'
+import { env } from './config/environment'
 
-const app = express()
+import { connectDB, closeDB } from './config/mongodb'
 
-const hostname = 'localhost'
-const port = 8017
+const START_SERVER = () => {
+  const app = express()
 
-app.get('/', (req, res) => {
-  // Test Absolute import mapOrder
-    console.log(mapOrder(
-    [ { id: 'id-1', name: 'One' },
-      { id: 'id-2', name: 'Two' },
-      { id: 'id-3', name: 'Three' },
-      { id: 'id-4', name: 'Four' },
-      { id: 'id-5', name: 'Five' } ],
-    ['id-5', 'id-4', 'id-2', 'id-3', 'id-1'],
-    'id'
-  ))
-  res.end('<h1>Hello Vu</h1><hr>')
+  app.get('/', (req, res) => {
+    res.end('<h1>Hello Vu</h1><hr>')
+  })
+
+  app.listen(env.APP_PORT, env.APP_HOST, () => {
+    // eslint-disable-next-line no-console
+    console.log(`Hi ${env.AUTHOR} .I am running at http://${env.APP_HOST}:${env.APP_PORT}/`)
+  })
+
+  process.on('SIGINT', async () => {
+    console.log('"Closing MongoDB connection..."')
+    await closeDB()
+    process.exit(0)
 })
 
-app.listen(port, hostname, () => {
-  // eslint-disable-next-line no-console
-  console.log(`I am running at http://${ hostname }:${ port }/`)
-})
+}
+
+connectDB()
+  .then(() => console.log('MongoDB connected successfully'))
+  .then(() => { START_SERVER() })
+  .catch((error) => {
+    console.error('Error connecting to MongoDB:', error)
+    process.exit(0)
+  })
