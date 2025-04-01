@@ -1,15 +1,14 @@
 /* eslint-disable no-console */
 import express from 'express'
 import { env } from './config/environment'
-
+import { APIs_V1 } from '~/routes/v1'
 import { connectDB, closeDB } from './config/mongodb'
+
 
 const START_SERVER = () => {
   const app = express()
 
-  app.get('/', (req, res) => {
-    res.end('<h1>Hello Vu</h1><hr>')
-  })
+  app.use('/v1', APIs_V1)
 
   app.listen(env.APP_PORT, env.APP_HOST, () => {
     // eslint-disable-next-line no-console
