@@ -7,7 +7,8 @@ import { connectDB, closeDB } from './config/mongodb'
 
 const START_SERVER = () => {
   const app = express()
-
+// enable req.body json data parsing
+  app.use(express.json())
   app.use('/v1', APIs_V1)
 
   app.listen(env.APP_PORT, env.APP_HOST, () => {
