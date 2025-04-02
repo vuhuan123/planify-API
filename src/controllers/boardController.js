@@ -1,16 +1,14 @@
 /* eslint-disable no-console */
 import { StatusCodes } from 'http-status-codes'
-
+import ApiError from '~/utils/ApiError'
 const createNew = async (req, res, next) => {
     try {
-        console.log('request.body', req.body)
-        res.status(StatusCodes.CREATED).json({ mes: 'helo everyone Post from controller', code : StatusCodes.CREATED })
+        // console.log('request.body', req.body)
+        // res.status(StatusCodes.CREATED).json({ mes: 'helo everyone Post from controller', code : StatusCodes.CREATED })
+        throw new ApiError(StatusCodes.BAD_REQUEST, 'This is a custom error message')
     } catch (error) {
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-            mes: 'hihi',
-            code : StatusCodes.INTERNAL_SERVER_ERROR
-        })
-
+        // nếu có lỗi, middleware next(error) sẽ gửi lỗi đến middleware xử lý lỗi trong Express.
+        next(error)
     }
 }
 
