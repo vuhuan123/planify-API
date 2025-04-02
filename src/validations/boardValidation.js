@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import Joi from 'joi'
 import { StatusCodes } from 'http-status-codes'
+import ApiError from '~/utils/ApiError'
 
 
 const createNew = async (req, res, next) => {
@@ -15,11 +16,11 @@ const createNew = async (req, res, next) => {
         await schema.validateAsync(req.body, { abortEarly: false })
         // If validation is successful, proceed to the next middleware or route handler
         next()
-        res.status(StatusCodes.CREATED).json({ mes: 'helo everyone Post', code : StatusCodes.CREATED })
+        // res.status(StatusCodes.CREATED).json({ mes: 'helo everyone Post', code : StatusCodes.CREATED })
     } catch (error) {
-        console.log(error)
-        res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({ mes: new Error(error).message, code : StatusCodes.UNPROCESSABLE_ENTITY })
-
+        // const errorsMessage = new Error(error).message
+        // const customError = new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, errorsMessage)
+        next( new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, error.message) )
     }
 
 }
