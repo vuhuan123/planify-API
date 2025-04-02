@@ -12,8 +12,9 @@ const createNew = async (req, res, next) => {
     try {
         // Validate the request body against the schema
         console.log('request.body', req.body)
-        await schema.validateAsync(req.body, { abortEarly: false, convert: false })
-        // next()
+        await schema.validateAsync(req.body, { abortEarly: false })
+        // If validation is successful, proceed to the next middleware or route handler
+        next()
         res.status(StatusCodes.CREATED).json({ mes: 'helo everyone Post', code : StatusCodes.CREATED })
     } catch (error) {
         console.log(error)
