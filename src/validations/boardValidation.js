@@ -12,7 +12,6 @@ const createNew = async (req, res, next) => {
 
     try {
         // Validate the request body against the schema
-        console.log('request.body', req.body)
         await schema.validateAsync(req.body, { abortEarly: false })
         // If validation is successful, proceed to the next middleware or route handler
         next()
