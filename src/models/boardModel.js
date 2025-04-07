@@ -25,7 +25,6 @@ const validaBeforeInsert = async (data) => {
 const createNew = async(data) => {
   try {
     const validatedData = await validaBeforeInsert(data)
-    console.log('validatedData', validatedData)
     const createBoadrd = await getDB().collection(BOARD_COLLECTION_NAME).insertOne(validatedData)
     // find id of created board
 
@@ -46,9 +45,22 @@ const findOneById = async (id) => {
   }
 }
 
+const getDetails = async (id) => {
+  try {
+    // convert id to ObjectId type
+    const idO = new ObjectId(id)
+    // console.log('ida', typeof( ida))
+    const idBoard = await getDB().collection(BOARD_COLLECTION_NAME).findOne({ _id: idO })
+    return idBoard
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
 export const boardModel = {
     BOARD_COLLECTION_NAME,
     BOARD_COLLECTION_SCHEMA,
     createNew,
-    findOneById
+    findOneById,
+    getDetails
 }
