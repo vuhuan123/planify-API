@@ -4,9 +4,11 @@ import { env } from './config/environment'
 import { APIs_V1 } from '~/routes/v1'
 import { connectDB, closeDB } from './config/mongodb'
 import { errorHandlingMiddleware } from './middlewares/errorHandlingMiddleware'
-
+import cors from 'cors'
+import { corsOptions } from './config/cors'
 const START_SERVER = () => {
   const app = express()
+  app.use(cors(corsOptions)) // enable CORS for all routes
 // enable req.body json data parsing
   app.use(express.json())
   app.use('/v1', APIs_V1)
