@@ -2,6 +2,8 @@ import Joi from 'joi'
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
 import { getDB } from '~/config/mongodb'
 import { ObjectId } from 'mongodb'
+import { columnModel } from './columnModel.js'
+import { cardModel } from './cardModel.js'
 //Define collection schema
 
 const BOARD_COLLECTION_NAME = 'boards'
@@ -15,14 +17,15 @@ const BOARD_COLLECTION_SCHEMA = Joi.object({
   ).default([]),
   createAt: Joi.date().timestamp('javascript').default(Date.now),
   updateAt: Joi.date().timestamp('javascript').default(null),
-  _destroyed: Joi.boolean().default(false)
-});
+  _destroyed: Joi.boolean().default(false),
+  type: Joi.string().valid('public', 'private').required()
+})
 
 const validaBeforeInsert = async (data) => {
   return await BOARD_COLLECTION_SCHEMA.validateAsync(data, { abortEarly: false })
 }
 
-const createNew = async(data) => {
+const createNew = async (data) => {
   try {
     const validatedData = await validaBeforeInsert(data)
     const createBoadrd = await getDB().collection(BOARD_COLLECTION_NAME).insertOne(validatedData)
@@ -47,20 +50,35 @@ const findOneById = async (id) => {
 
 const getDetails = async (id) => {
   try {
-    // convert id to ObjectId type
-    const idO = new ObjectId(id)
     // console.log('ida', typeof( ida))
-    const idBoard = await getDB().collection(BOARD_COLLECTION_NAME).findOne({ _id: idO })
-    return idBoard
+    const result = await getDB().collection(BOARD_COLLECTION_NAME).aggregate([
+      { $match : {
+        _id : new ObjectId(id),
+        _destroyed : false
+      } },
+      { $lookup: {
+        from: columnModel.COLUMN_COLLECTION_NAME,
+        localField: '_id',
+        foreignField: 'boardId',
+        as: 'columns'
+      } },
+      { $lookup: {
+        from: cardModel.CARD_COLLECTION_NAME,
+        localField: '_id',
+        foreignField: 'boardId',
+        as: 'cards'
+      } }
+    ]).toArray()
+    return result[0] || {} // Return the first element or an empty object if not found
   } catch (error) {
     throw new Error(error)
   }
 }
 
 export const boardModel = {
-    BOARD_COLLECTION_NAME,
-    BOARD_COLLECTION_SCHEMA,
-    createNew,
-    findOneById,
-    getDetails
+  BOARD_COLLECTION_NAME,
+  BOARD_COLLECTION_SCHEMA,
+  createNew,
+  findOneById,
+  getDetails
 }

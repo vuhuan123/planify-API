@@ -3,6 +3,7 @@ import { slugify } from '~/utils/formatter'
 import { boardModel } from '~/models/boardModel'
 import ApiError from '~/utils/ApiError'
 import { StatusCodes } from 'http-status-codes'
+import { cloneDeep } from 'lodash'
 const createNew = async (reqBody) => {
     try {
         const newBoard = {
@@ -24,7 +25,16 @@ const getDetails = async (boardId) => {
         if (!board) {
             throw new ApiError(StatusCodes.NOT_FOUND, 'Board not found')
         }
-        return board
+        //B1 clone board
+        const resBoard = cloneDeep(board)
+        // b2: Dua card ve dung column cua no
+        resBoard.columns.map((column) => {
+            // column.cards = resBoard.cards.filter((card) => card.columnId.equals(column._id))
+            column.cards = resBoard.cards.filter((card) => card.columnId.toString() === column._id.toString())
+        })
+        // xoa card ra khoi mang ban dau
+        delete resBoard.cards
+        return resBoard
     } catch (error) {
         throw error
     }
