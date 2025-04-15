@@ -12,7 +12,7 @@ const createNew = async (reqBody) => {
         }
         const createdBoard = await boardModel.createNew(newBoard)
         // eslint-disable-next-line no-unused-vars
-        const idBoard = await boardModel.findOneById(createdBoard.insertedId)
+        // const idBoard = await boardModel.findOneById(createdBoard.insertedId)
         return createdBoard
     } catch (error) {
         throw error
