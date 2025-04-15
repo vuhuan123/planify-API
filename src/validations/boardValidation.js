@@ -25,6 +25,27 @@ const createNew = async (req, res, next) => {
 
 }
 
+const update = async (req, res, next) => {
+    const schema = Joi.object({
+        title : Joi.string().min(3).max(50).trim().strict(),
+        description : Joi.string().min(3).max(256).trim().strict(),
+        type : Joi.string().valid('public', 'private')
+    })
+
+    try {
+        await schema.validateAsync(req.body, {
+            abortEarly: false,
+            allowUnknown: true // doi voi cac truong khong co trong schema nhung co trong body thi van cho phep
+        })
+        next()
+        // res.status(StatusCodes.CREATED).json({ mes: 'helo everyone Post', code : StatusCodes.CREATED })
+    } catch (error) {
+        next( new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, error.message) )
+    }
+
+}
+
 export const boardValidation = {
-    createNew
+    createNew,
+    update
 }
