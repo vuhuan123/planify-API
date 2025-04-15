@@ -8,7 +8,8 @@ import cors from 'cors'
 import { corsOptions } from './config/cors'
 const START_SERVER = () => {
   const app = express()
-  app.use(cors(corsOptions)) // enable CORS for all routes
+  // app.use(cors()) // enable CORS for all routes
+  app.use(cors(corsOptions)) // enable CORS for a routes
 // enable req.body json data parsing
   app.use(express.json())
   app.use('/v1', APIs_V1)

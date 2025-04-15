@@ -52,24 +52,43 @@ const getDetails = async (id) => {
   try {
     // console.log('ida', typeof( ida))
     const result = await getDB().collection(BOARD_COLLECTION_NAME).aggregate([
-      { $match : {
-        _id : new ObjectId(id),
-        _destroyed : false
-      } },
-      { $lookup: {
-        from: columnModel.COLUMN_COLLECTION_NAME,
-        localField: '_id',
-        foreignField: 'boardId',
-        as: 'columns'
-      } },
-      { $lookup: {
-        from: cardModel.CARD_COLLECTION_NAME,
-        localField: '_id',
-        foreignField: 'boardId',
-        as: 'cards'
-      } }
+      {
+        $match: {
+          _id: new ObjectId(id),
+          _destroyed: false
+        }
+      },
+      {
+        $lookup: {
+          from: columnModel.COLUMN_COLLECTION_NAME,
+          localField: '_id',
+          foreignField: 'boardId',
+          as: 'columns'
+        }
+      },
+      {
+        $lookup: {
+          from: cardModel.CARD_COLLECTION_NAME,
+          localField: '_id',
+          foreignField: 'boardId',
+          as: 'cards'
+        }
+      }
     ]).toArray()
-    return result[0] || {} // Return the first element or an empty object if not found
+    return result[0] || null // Return the first element or an empty object if not found
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
+const pushColumnOrderIds = async (column) => {
+  try {
+    const result = await getDB().collection(BOARD_COLLECTION_NAME).findOneAndUpdate(
+      { _id: new ObjectId(column.boardId) },
+      { $push : { columnOrderIds: new ObjectId(column._id) } },
+      { returnDocument: 'after' } // Return the updated document
+    )
+    return result.value || null
   } catch (error) {
     throw new Error(error)
   }
@@ -80,5 +99,6 @@ export const boardModel = {
   BOARD_COLLECTION_SCHEMA,
   createNew,
   findOneById,
-  getDetails
+  getDetails,
+  pushColumnOrderIds
 }
