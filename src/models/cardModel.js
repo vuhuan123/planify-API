@@ -6,6 +6,7 @@ import { ObjectId } from 'mongodb'
 import { getDB } from '~/config/mongodb'
 // Define Collection (name & schema)
 const CARD_COLLECTION_NAME = 'cards'
+const INVALID_UPDATE_FIELDS = ['_id', 'createAt', 'boardId']
 const CARD_COLLECTION_SCHEMA = Joi.object({
   boardId: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
   columnId: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
@@ -47,11 +48,35 @@ const findOneById = async (id) => {
   }
 }
 
+const update = async (cardId, updateData) => {
+  try {
+    // Loc những trường không cho pheps trong updateData
+    Object.keys(updateData).forEach((key) => {
+      if (INVALID_UPDATE_FIELDS.includes(key)) {
+        delete updateData[key]
+      }
+    })
+    if (updateData.columnId) {
+      updateData.columnId = new ObjectId(updateData.columnId) // convert columnId to ObjectId type
+    }
+    // Add updatedAt field
+    const result = await getDB().collection(CARD_COLLECTION_NAME).findOneAndUpdate(
+      { _id: new ObjectId(cardId) },
+      { $set : updateData },
+      { returnDocument: 'after' } // Return the updated document
+    )
+    return result
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
 
 export const cardModel = {
   CARD_COLLECTION_NAME,
   CARD_COLLECTION_SCHEMA,
   createNew,
   findOneById,
-  validaBeforeInsert
+  validaBeforeInsert,
+  update
 }

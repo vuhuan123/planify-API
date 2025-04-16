@@ -7,6 +7,7 @@ import { ObjectId } from 'mongodb'
 // import { cardModel } from './cardModel.js'
 // Define Collection (name & schema)
 const COLUMN_COLLECTION_NAME = 'columns'
+const INVALID_UPDATE_FIELDS = ['_id', 'createAt', 'boardId']
 const COLUMN_COLLECTION_SCHEMA = Joi.object({
   boardId: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
   title: Joi.string().required().min(3).max(50).trim().strict(),
@@ -64,11 +65,37 @@ const pushCardOrderIds = async (card) => {
   }
 }
 
+const update = async (columnId, updateData) => {
+  try {
+    // Loc những trường không cho pheps trong updateData
+    Object.keys(updateData).forEach((key) => {
+      if (INVALID_UPDATE_FIELDS.includes(key)) {
+        delete updateData[key]
+      }
+    })
+
+    if (updateData.cardOrderIds) {
+      updateData.cardOrderIds = updateData.cardOrderIds.map((id) => new ObjectId(id)) // convert cardOrderIds to ObjectId type
+    }
+    // console.log('updateData', updateData)
+    // Add updatedAt field
+    const result = await getDB().collection(COLUMN_COLLECTION_NAME).findOneAndUpdate(
+      { _id: new ObjectId(columnId) },
+      { $set : updateData },
+      { returnDocument: 'after' } // Return the updated document
+    )
+    return result
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
 export const columnModel = {
   COLUMN_COLLECTION_NAME,
   COLUMN_COLLECTION_SCHEMA,
   createNew,
   findOneById,
   validaBeforeInsert,
-  pushCardOrderIds
+  pushCardOrderIds,
+  update
 }
