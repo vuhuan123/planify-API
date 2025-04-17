@@ -96,6 +96,21 @@ const pushColumnOrderIds = async (column) => {
   }
 }
 
+// lay 1 Columnid ra khoi columnOrderIds
+const pullColumnOrderIds = async (column) => {
+  try {
+    const result = await getDB().collection(BOARD_COLLECTION_NAME).findOneAndUpdate(
+      { _id: new ObjectId(column.boardId) },
+      { $pull : { columnOrderIds: new ObjectId(column._id) } },
+      { returnDocument: 'after' } // Return the updated document
+    )
+    return result
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
+
 const update = async (boardId, updateData) => {
   try {
     // Loc những trường không cho pheps trong updateData
@@ -127,5 +142,6 @@ export const boardModel = {
   findOneById,
   getDetails,
   pushColumnOrderIds,
-  update
+  update,
+  pullColumnOrderIds
 }

@@ -56,7 +56,7 @@ const pushCardOrderIds = async (card) => {
   try {
     const result = await getDB().collection(COLUMN_COLLECTION_NAME).findOneAndUpdate(
       { _id: new ObjectId(card.columnId) },
-      { $push : { cardOrderIds: new ObjectId(card._id) } },
+      { $push: { cardOrderIds: new ObjectId(card._id) } },
       { returnDocument: 'after' } // Return the updated document
     )
     return result
@@ -81,7 +81,7 @@ const update = async (columnId, updateData) => {
     // Add updatedAt field
     const result = await getDB().collection(COLUMN_COLLECTION_NAME).findOneAndUpdate(
       { _id: new ObjectId(columnId) },
-      { $set : updateData },
+      { $set: updateData },
       { returnDocument: 'after' } // Return the updated document
     )
     return result
@@ -90,6 +90,19 @@ const update = async (columnId, updateData) => {
   }
 }
 
+// Xoa column
+const deleteOneById = async (id) => {
+  try {
+    // convert id to ObjectId type
+    const idO = new ObjectId(id)
+    const result = await getDB().collection(COLUMN_COLLECTION_NAME).deleteOne({ _id: idO })
+    return result
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
+
 export const columnModel = {
   COLUMN_COLLECTION_NAME,
   COLUMN_COLLECTION_SCHEMA,
@@ -97,5 +110,6 @@ export const columnModel = {
   findOneById,
   validaBeforeInsert,
   pushCardOrderIds,
-  update
+  update,
+  deleteOneById
 }
