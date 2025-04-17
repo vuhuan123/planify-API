@@ -2,7 +2,7 @@
 // import { slugify } from '~/utils/formatter'
 import { columnModel } from '~/models/columnModel'
 import { boardModel } from '~/models/boardModel'
-
+import { cardModel } from '~/models/cardModel'
 const createNew = async (reqBody) => {
     try {
         const newColumn = {
@@ -32,8 +32,27 @@ const update = async (columnId, reqBody) => {
         throw error
     }
 }
+const deleteColumn = async (columnId) => {
+    try {
+        const tartgetColumn = await columnModel.findOneById(columnId)
+        if (!tartgetColumn) {
+            throw new Error('Column not found')
+        }
+       // Xoa column
+    await columnModel.deleteOneById(columnId)
+       //Xoa Card trong column
+    await cardModel.deleteManyByColumnId(columnId)
+
+        //Xoa columnId trong board
+    await boardModel.pullColumnOrderIds(tartgetColumn)
+       return { deleteColumn: 'Column and cards deleted' }
+    } catch (error) {
+        throw error
+    }
+}
 
 export const columnService = {
     createNew,
-    update
+    update,
+    deleteColumn
 }
