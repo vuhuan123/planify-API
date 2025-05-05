@@ -1,3 +1,5 @@
+import { pick } from 'lodash'
+
 export const slugify = (str) => {
     if (!str) return ''
     return str
@@ -10,3 +12,9 @@ export const slugify = (str) => {
       .replace(/\s+/g, '-') // Thay khoảng trắng bằng dấu -
       .replace(/-+/g, '-') // Loại bỏ dấu - thừa
   }
+
+export const pickUser = (user) => {
+  if (!user) return null
+  return pick(user, ['_id', 'email', 'username', 'displayName', 'avatar', 'role', 'isActive', 'createdAt', 'updatedAt'])
+
+}
