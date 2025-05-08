@@ -8,7 +8,6 @@ import { WEBSITE_DOMAIN } from '~/utils/constants'
 import { brevoProvider } from '~/providers/brevoProvider'
 import { env } from '~/config/environment'
 import { jwtProvider } from '~/providers/JwtProvider'
-import ms from 'ms'
 const createNew = async (reqBody) => {
     try {
      // kiem tra xem email da ton tai hay chua
@@ -90,10 +89,44 @@ const login = async (reqBody) => {
 // tạo token cho người dùng
     const userInfor = { _id: user._id, email: user.email }
     // tạo access token cho người dùng
-    const accessToken = await jwtProvider.generateToken(userInfor, env.ACCESS_TOKEN_SECRET, env.ACCESS_TOKEN_LIFE)
+    const accessToken = await jwtProvider.generateToken(
+        userInfor, env.ACCESS_TOKEN_SECRET,
+        env.ACCESS_TOKEN_LIFE
+        // 5 (5s for test)
+    )
     // tạo refresh token cho người dùng
-    const refreshToken = await jwtProvider.generateToken(userInfor, env.REFRESH_TOKEN_SECRET, env.REFRESH_TOKEN_LIFE)
+    const refreshToken = await jwtProvider.generateToken(
+        userInfor,
+        env.REFRESH_TOKEN_SECRET,
+        env.REFRESH_TOKEN_LIFE
+        // 15 (15s for test)
+    )
     return { accessToken, refreshToken, ...pickUser(user) } // trả về thông tin người dùng đã xác thực, không bao gồm mật khẩu và các thông tin nhạy cảm khác
+    } catch (error) {
+        throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)
+    }
+}
+
+const refreshToken = async (refreshToken) => {
+    try {
+        // giải mã refresh token
+        const decoded = await jwtProvider.verifyToken(refreshToken, env.REFRESH_TOKEN_SECRET)
+        // tìm người dùng trong db
+        const userInfor = {
+            _id: decoded._id,
+            email: decoded.email
+        }
+        if (!userInfor) {
+            throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
+        }
+        // tạo access token cho người dùng
+        const accessToken = await jwtProvider.generateToken(
+            userInfor,
+            env.ACCESS_TOKEN_SECRET,
+            env.ACCESS_TOKEN_LIFE
+            // 5 (5s for test)
+        )
+        return { accessToken } // trả về thông tin người dùng đã xác thực, không bao gồm mật khẩu và các thông tin nhạy cảm khác
     } catch (error) {
         throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)
     }
@@ -101,5 +134,6 @@ const login = async (reqBody) => {
 export const userService = {
     createNew,
     verifyAccount,
-    login
+    login,
+    refreshToken
 }
