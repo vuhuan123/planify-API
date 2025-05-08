@@ -6,8 +6,17 @@ import { connectDB, closeDB } from './config/mongodb'
 import { errorHandlingMiddleware } from './middlewares/errorHandlingMiddleware'
 import cors from 'cors'
 import { corsOptions } from './config/cors'
+import cookieParser from 'cookie-parser'
+
 const START_SERVER = () => {
   const app = express()
+
+  app.use((req, res, next) => {
+    res.set('Cache-Control', 'no-store')
+    next()
+  })
+// cau hinh cookieParser
+  app.use(cookieParser())
   // app.use(cors()) // enable CORS for all routes
   app.use(cors(corsOptions)) // enable CORS for a routes
 // enable req.body json data parsing
