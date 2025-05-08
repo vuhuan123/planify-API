@@ -9,5 +9,10 @@ Router.route('/register')
  .put(userValidation.verifyAccount, userController.verifyAccount)
  Router.route('/login')
  .post(userValidation.login, userController.login)
+ Router.route('/logout')
+ .delete(userController.logout)
+ Router.route('/refreshToken')
+ .get(userController.refreshToken)
+
 
  export const userRoutes = Router
