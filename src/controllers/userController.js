@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import { StatusCodes } from 'http-status-codes'
 import { userService } from '~/services/userSevices'
+import ms from 'ms'
 const createNew = async (req, res, next) => {
     try {
         const createdUser = await userService.createNew(req.body)
@@ -26,7 +27,20 @@ const verifyAccount = async (req, res, next) => {
 const login = async (req, res, next) => {
     try {
         const result = await userService.login(req.body)
-        console.log('result', result)
+        // xu ly http only cookie cho phia client
+        res.cookie('accessToken', result.accessToken, {
+            httpOnly : true,
+            secure : true,
+            sameSite : 'none',
+            maxAge : ms('14 day')
+        })
+
+        res.cookie('refreshToken', result.refreshToken, {
+            httpOnly : true,
+            secure : true,
+            sameSite : 'none',
+            maxAge : ms('14 day')
+        })
         res.status(StatusCodes.OK).json(result)
 
     } catch (error) {

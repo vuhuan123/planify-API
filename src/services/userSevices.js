@@ -8,6 +8,7 @@ import { WEBSITE_DOMAIN } from '~/utils/constants'
 import { brevoProvider } from '~/providers/brevoProvider'
 import { env } from '~/config/environment'
 import { jwtProvider } from '~/providers/JwtProvider'
+import ms from 'ms'
 const createNew = async (reqBody) => {
     try {
      // kiem tra xem email da ton tai hay chua
@@ -88,7 +89,9 @@ const login = async (reqBody) => {
     // neu moi thu ok thi bat dau tao token de tra ve cho client
 // tạo token cho người dùng
     const userInfor = { _id: user._id, email: user.email }
+    // tạo access token cho người dùng
     const accessToken = await jwtProvider.generateToken(userInfor, env.ACCESS_TOKEN_SECRET, env.ACCESS_TOKEN_LIFE)
+    // tạo refresh token cho người dùng
     const refreshToken = await jwtProvider.generateToken(userInfor, env.REFRESH_TOKEN_SECRET, env.REFRESH_TOKEN_LIFE)
     return { accessToken, refreshToken, ...pickUser(user) } // trả về thông tin người dùng đã xác thực, không bao gồm mật khẩu và các thông tin nhạy cảm khác
     } catch (error) {
