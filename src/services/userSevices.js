@@ -131,9 +131,38 @@ const refreshToken = async (refreshToken) => {
         throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)
     }
 }
+const update = async (userId, reqBody) => {
+    try {
+    const user = await userModel.findOneById(userId)
+    if (!user) {
+        throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
+    }
+    if (!user.isActive) {
+        throw new ApiError(StatusCodes.NOT_ACCEPTABLE, 'Your account is not active')
+    }
+    let updateUser = {}
+    if (reqBody.current_password && reqBody.new_password) {
+        //Kiem tra xem mat khau cu co dung hay khong
+        if (!bcrypt.compareSync(reqBody.current_password, user.password)) {
+            throw new ApiError(StatusCodes.UNAUTHORIZED, 'Password is not valid')
+        }
+        // Neu mat khau cu dung thi cap nhat mat khau moi
+        updateUser = await userModel.updateById(userId, {
+            password: bcrypt.hashSync(reqBody.new_password, 8) // mã hóa mật khẩu, doi so thu 2 la do phuc tap
+        })
+    } else {
+        // Th update cac thong tin chung nhu email, displayName, username
+        updateUser = await userModel.updateById(userId, reqBody)
+    }
+    return pickUser(updateUser) // trả về thông tin người dùng đã xác thực, không bao gồm mật khẩu và các thông tin nhạy cảm khác
+    } catch (error) {
+        throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)
+    }
+}
 export const userService = {
     createNew,
     verifyAccount,
     login,
-    refreshToken
+    refreshToken,
+    update
 }
