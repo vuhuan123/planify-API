@@ -8,6 +8,7 @@ import { WEBSITE_DOMAIN } from '~/utils/constants'
 import { brevoProvider } from '~/providers/brevoProvider'
 import { env } from '~/config/environment'
 import { jwtProvider } from '~/providers/JwtProvider'
+import { CloundinaryProvider } from '~/providers/cloundinaryProvider'
 const createNew = async (reqBody) => {
     try {
      // kiem tra xem email da ton tai hay chua
@@ -131,7 +132,7 @@ const refreshToken = async (refreshToken) => {
         throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)
     }
 }
-const update = async (userId, reqBody) => {
+const update = async (userId, reqBody, userAvavatar) => {
     try {
     const user = await userModel.findOneById(userId)
     if (!user) {
@@ -150,7 +151,18 @@ const update = async (userId, reqBody) => {
         updateUser = await userModel.updateById(userId, {
             password: bcrypt.hashSync(reqBody.new_password, 8) // mã hóa mật khẩu, doi so thu 2 la do phuc tap
         })
-    } else {
+    }
+    // nếu có avatar thì cập nhật avatar
+    else if (userAvavatar) {
+        // cập nhật avatar
+        const uploadAvatar = await CloundinaryProvider.uploadStream(userAvavatar.buffer, 'users')
+        console.log('uploadAvatar: ', uploadAvatar)
+        // Luu lai url cua cai file anh vao database
+         updateUser = await userModel.updateById(userId, {
+            avatar: uploadAvatar.secure_url
+         })
+    }
+    else {
         // Th update cac thong tin chung nhu email, displayName, username
         updateUser = await userModel.updateById(userId, reqBody)
     }
