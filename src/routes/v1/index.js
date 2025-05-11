@@ -10,7 +10,7 @@ Router.get('/status', (req, res) => {
     res.status(StatusCodes.OK).json({ status: 'OK men', code : StatusCodes.OK })
 })
 // board apis
-Router.use('/board', boardRoutes)
+Router.use('/boards', boardRoutes)
 // columns apis
 Router.use('/columns', columnRoute)
 // cards apis

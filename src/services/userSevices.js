@@ -156,7 +156,7 @@ const update = async (userId, reqBody, userAvavatar) => {
     else if (userAvavatar) {
         // cập nhật avatar
         const uploadAvatar = await CloundinaryProvider.uploadStream(userAvavatar.buffer, 'users')
-        console.log('uploadAvatar: ', uploadAvatar)
+
         // Luu lai url cua cai file anh vao database
          updateUser = await userModel.updateById(userId, {
             avatar: uploadAvatar.secure_url
