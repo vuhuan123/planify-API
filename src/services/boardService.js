@@ -7,13 +7,13 @@ import { cloneDeep } from 'lodash'
 import { columnModel } from '~/models/columnModel'
 import { cardModel } from '~/models/cardModel'
 import { DEFAULT_ITEMS_PER_PAGE, DEFAULT_PAGE } from '~/utils/constants'
-const createNew = async (reqBody) => {
+const createNew = async (userId, reqBody) => {
     try {
         const newBoard = {
             ...reqBody,
             slug:slugify(reqBody.title)
         }
-        const createdBoard = await boardModel.createNew(newBoard)
+        const createdBoard = await boardModel.createNew(userId, newBoard)
         // eslint-disable-next-line no-unused-vars
         // const idBoard = await boardModel.findOneById(createdBoard.insertedId)
         return createdBoard
@@ -22,9 +22,9 @@ const createNew = async (reqBody) => {
     }
 }
 
-const getDetails = async (boardId) => {
+const getDetails = async (userId, boardId) => {
     try {
-        const board = await boardModel.getDetails(boardId)
+        const board = await boardModel.getDetails(userId, boardId)
         if (!board) {
             throw new ApiError(StatusCodes.NOT_FOUND, 'Board not found')
         }

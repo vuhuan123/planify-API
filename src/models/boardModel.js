@@ -27,7 +27,7 @@ const BOARD_COLLECTION_SCHEMA = Joi.object({
   createAt: Joi.date().timestamp('javascript').default(Date.now),
   updateAt: Joi.date().timestamp('javascript').default(null),
   _destroyed: Joi.boolean().default(false),
-  type: Joi.string().valid('public', 'private').required()
+  type: Joi.string().valid('public', 'private')
 })
 
 const INVALID_UPDATE_FIELDS = ['_id', 'createAt']
@@ -36,10 +36,14 @@ const validaBeforeInsert = async (data) => {
   return await BOARD_COLLECTION_SCHEMA.validateAsync(data, { abortEarly: false })
 }
 
-const createNew = async (data) => {
+const createNew = async (userId, data) => {
   try {
     const validatedData = await validaBeforeInsert(data)
-    const createBoadrd = await getDB().collection(BOARD_COLLECTION_NAME).insertOne(validatedData)
+    const newBoardToAdd = {
+      ...validatedData,
+      ownerIds : [new ObjectId(userId)]
+    }
+    const createBoadrd = await getDB().collection(BOARD_COLLECTION_NAME).insertOne(newBoardToAdd)
     // find id of created board
 
     return createBoadrd
@@ -59,16 +63,19 @@ const findOneById = async (id) => {
   }
 }
 
-const getDetails = async (id) => {
+const getDetails = async (userId, boardId) => {
   try {
     // console.log('ida', typeof( ida))
+    const queryCondition = [
+      { _id: new ObjectId(boardId) },
+      { _destroyed: false },
+      { $or: [
+        { ownerIds: { $all: [new ObjectId(userId)] } },
+        { memberIds: { $all: [new ObjectId(userId)] } }
+      ] }
+    ]
     const result = await getDB().collection(BOARD_COLLECTION_NAME).aggregate([
-      {
-        $match: {
-          _id: new ObjectId(id),
-          _destroyed: false
-        }
-      },
+      { $match : { $and: queryCondition } },
       {
         $lookup: {
           from: columnModel.COLUMN_COLLECTION_NAME,
