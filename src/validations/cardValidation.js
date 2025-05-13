@@ -19,6 +19,20 @@ const createNew = async (req, res, next) => {
 
 }
 
+const update = async (req, res, next) =>{
+    const schema = Joi.object({
+        title: Joi.string().max(50).trim().strict(),
+        desciption: Joi.string().optional()
+    })
+    try {
+        await schema.validateAsync(req.body, { abortEarly: false, allowUnknown: true })
+        next()
+    } catch (error) {
+        next( new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, error.message) )
+    }
+}
+
 export const cardValidation = {
-    createNew
+    createNew,
+    update
 }
