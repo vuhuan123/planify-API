@@ -18,12 +18,12 @@ const USER_COLLECTION_SCHEMA = Joi.object({
     username : Joi.string().required().trim().strict(),
     displayName : Joi.string().required().trim().strict(),
     avatar : Joi.string().default(null),
-    role: Joi.string().valid(USER_ROLES.CLIENT, USER_ROLES.ADMIN).default(USER_ROLES.CLIENT),
+    role: Joi.string().valid(...Object.values(USER_ROLES)).default(USER_ROLES.CLIENT),
     isActive: Joi.boolean().default(false),
     verifyToken: Joi.string(),
     createdAt: Joi.date().timestamp('javascript').default(Date.now),
     updatedAt: Joi.date().timestamp('javascript').default(null),
-    _destroy: Joi.boolean().default(false),
+    _destroy: Joi.boolean().default(false)
 })
 
 const INVALID_UPDATE_FIELDS = ['_id', 'email', 'username', 'createdAt']
@@ -47,7 +47,7 @@ const findOneById = async (id) => {
     try {
        const user = await getDB()
             .collection(USER_COLLECTION_NAME)
-            .findOne({ _id: new ObjectId(id) 
+            .findOne({ _id: new ObjectId(id)
         })
         return user
     } catch (error) {
@@ -87,12 +87,12 @@ const updateById = async (id, data) => {
     }
 }
 
-export const userModel = { 
+export const userModel = {
     createNew,
     findOneById,
     findOneByEmail,
     updateById,
     USER_ROLES,
     USER_COLLECTION_NAME,
-    USER_COLLECTION_SCHEMA,
+    USER_COLLECTION_SCHEMA
 }

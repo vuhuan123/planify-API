@@ -22,7 +22,7 @@ const createNew = async (reqBody) => {
     }
 }
 
-const update = async (cardId, reqBody, cardCoverFile) => {
+const update = async (cardId, reqBody, cardCoverFile, userInfo) => {
     try {
         const updateData = {
             ...reqBody,
@@ -34,7 +34,17 @@ const update = async (cardId, reqBody, cardCoverFile) => {
             updatedCard = await cardModel.update(cardId, {
                 cover: uploadResult.secure_url
             })
-        } else {
+        } else if (updateData.commentToAdd) {
+            //Tao du lieu comment de them vao db, can bo sung nhung fied can thiet
+            const commentData = {
+                ...updateData.commentToAdd,
+                commentAt: Date.now(),
+                userId : userInfo._id,
+                userEmail : userInfo.email
+            }
+            updatedCard = await cardModel.unshiftNewComment(cardId, commentData)
+        }
+        else {
             // Cac truong hop chung
             updatedCard = await cardModel.update(cardId, updateData)
         }
