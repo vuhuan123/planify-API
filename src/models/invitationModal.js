@@ -3,7 +3,8 @@ import { ObjectId } from 'mongodb'
 import { getDB } from '~/config/mongodb'
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
 import { INITATION_TYPES, BOARD_INVITATION_STATUS } from '~/utils/constants'
-
+import { userModel } from '../models/userModel'
+import { boardModel } from '../models/boardModel'
 const INVITATION_COLLECTION_NAME = 'invitations'
 const INVITATION_COLLECTION_SCHEMA = Joi.object({
     inviterId : Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
@@ -83,11 +84,55 @@ const update = async (invitationId, updateData) => {
     throw new Error(error)
   }
 }
+// qurey toongr hop de lay nhung ban ghi invitaion thuoc ve mot thang user cu the
+const findByUser = async (userId) => {
+  try {
+    // console.log('ida', typeof( ida))
+    const queryCondition = [
+      { inviteeId: new ObjectId(userId) }, // Tim theo invitee - nguoi dc moi - chinh la nguoi dang thuc hien req
+      { _destroyed: false }
+    ]
+    const results = await getDB().collection(INVITATION_COLLECTION_NAME).aggregate([
+      { $match : { $and: queryCondition } },
+      {
+        $lookup : {
+          from : userModel.USER_COLLECTION_NAME,
+          localField : 'inviterId',
+          foreignField : '_id',
+          as : 'inviter',
+          pipeline : [{ $project : { 'password': 0, 'verifyToken': 0 } }]
+        }
+      },
+          {
+        $lookup : {
+          from : userModel.USER_COLLECTION_NAME,
+          localField : 'inviteeId',
+          foreignField : '_id',
+          as : 'invitee',
+          pipeline : [{ $project : { 'password': 0, 'verifyToken': 0 } }]
+        }
+      },
+      {
+        $lookup : {
+          from : boardModel.BOARD_COLLECTION_NAME,
+          localField : 'boardInvitation.boardId',
+          foreignField : '_id',
+          as : 'board'
+      }
+    }
+    ]).toArray()
+    return results
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
 
 export const invitationModal = {
     INVITATION_COLLECTION_NAME,
     INVITATION_COLLECTION_SCHEMA,
     createNewBoardInvitation,
     findOneById,
-    update
+    update,
+    findByUser
 }

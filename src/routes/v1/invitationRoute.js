@@ -8,5 +8,8 @@ Router.route('/board')
     .post(authMiddleware.isAuthorized,
         invitationValidation.createNewBoardInvitation,
         invitationController.createNewBoardInvitation
-)
+    )
+// get invitation by user
+Router.route('/')
+.get(authMiddleware.isAuthorized, invitationController.getInvitation)
 export const invationRoute = Router

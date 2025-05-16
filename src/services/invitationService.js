@@ -37,6 +37,27 @@ catch (error) {
     }
 }
 
+const getInvitation = async (userId) => {
+    try {
+        const getInvitations = await invitationModal.findByUser(userId)
+        console.log(getInvitations)
+        const resInvitations = getInvitations.map(i => {
+            return {
+                ...i,
+                inviter : i.inviter[0] || {},
+                invitee : i.invitee[0] || {},
+                board :     i.board[0] || {}
+
+            }
+        })
+
+        return resInvitations
+    } catch (error) {
+        throw new Error(error)
+    }
+}
+
 export const invitationService = {
-    createNewBoardInvitation
+    createNewBoardInvitation,
+    getInvitation
 }
