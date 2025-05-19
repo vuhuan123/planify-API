@@ -40,7 +40,7 @@ catch (error) {
 const getInvitation = async (userId) => {
     try {
         const getInvitations = await invitationModal.findByUser(userId)
-        console.log(getInvitations)
+        // console.log(getInvitations)
         const resInvitations = getInvitations.map(i => {
             return {
                 ...i,
@@ -57,7 +57,36 @@ const getInvitation = async (userId) => {
     }
 }
 
+const updateBoardInvitation = async (userId, invitationId, status) => {
+     try {
+        const getInvitation = await invitationModal.findOneById(invitationId)
+        if (!getInvitation) throw new ApiError(StatusCodes.NOT_FOUND, 'Invitation not found~getInvitation!')
+        const boardId = getInvitation.boardInvitation.boardId
+        const getBoard = await boardModel.findOneById(boardId)
+        if (!getBoard) throw new ApiError(StatusCodes.NOT_FOUND), 'Board not found!'
+        const boardOwnerAndMemberIds = [...getBoard.ownerIds, ...getBoard.memberIds].toString()
+        if (status === BOARD_INVITATION_STATUS.ACCEPTED && boardOwnerAndMemberIds.includes(userId) ) {
+             throw new ApiError(StatusCodes.NOT_ACCEPTABLE), 'You are already a member of this board!'
+        }
+        const updateData = {
+            boardInvitation : {
+                ...getInvitation.boardInvitation,
+                status : status
+            }
+        }
+        //B1 cap nhat status
+        const updatedInvitation = await invitationModal.update(invitationId, updateData)
+        //B2 Accept
+        if (updatedInvitation.boardInvitation.status === BOARD_INVITATION_STATUS.ACCEPTED) {
+            await boardModel.pushMembersIds(boardId, userId)
+        }
+        return updatedInvitation
+    } catch (error) {
+        throw new Error(error)
+    }
+}
 export const invitationService = {
     createNewBoardInvitation,
-    getInvitation
+    getInvitation,
+    updateBoardInvitation
 }

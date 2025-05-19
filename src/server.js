@@ -7,7 +7,9 @@ import { errorHandlingMiddleware } from './middlewares/errorHandlingMiddleware'
 import cors from 'cors'
 import { corsOptions } from './config/cors'
 import cookieParser from 'cookie-parser'
-
+import socketIo from 'socket.io'
+import http from 'http'
+import {inviteUserToBoardSocket} from '../src/sockets/inviteUserToBoardSocket'
 const START_SERVER = () => {
   const app = express()
 
@@ -25,7 +27,16 @@ const START_SERVER = () => {
 
   //error handling middleware
   app.use(errorHandlingMiddleware)
-  app.listen(env.APP_PORT, env.APP_HOST, () => {
+
+  //Tao 1 server ms bang thang app cuar express de lam real-time vs socketIo
+  const server = http.createServer(app)
+  // Khoi tao bien io vs server vaf cors
+  const io = socketIo(server, { cors: corsOptions })
+  io.on('connection', (socket) => {
+  // Lang nghe su kien client emit len
+ inviteUserToBoardSocket(socket)
+})
+  server.listen(env.APP_PORT, env.APP_HOST, () => {
     // eslint-disable-next-line no-console
     console.log(`Hi ${env.AUTHOR} .I am running at http://${env.APP_HOST}:${env.APP_PORT}/`)
   })

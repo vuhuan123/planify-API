@@ -131,6 +131,8 @@ const pushColumnOrderIds = async (column) => {
   }
 }
 
+
+
 // lay 1 Columnid ra khoi columnOrderIds
 const pullColumnOrderIds = async (column) => {
   try {
@@ -211,6 +213,19 @@ const getBoards = async (userId, page, itemsPerPage) => {
   }
 }
 
+const pushMembersIds = async (boardId, userId) => {
+  try {
+    const result = await getDB().collection(BOARD_COLLECTION_NAME).findOneAndUpdate(
+      { _id: new ObjectId(boardId) },
+      { $push : { memberIds: new ObjectId(userId) } },
+      { returnDocument: 'after' } // Return the updated document
+    )
+    return result
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
 export const boardModel = {
   BOARD_COLLECTION_NAME,
   BOARD_COLLECTION_SCHEMA,
@@ -220,5 +235,6 @@ export const boardModel = {
   pushColumnOrderIds,
   update,
   pullColumnOrderIds,
-  getBoards
+  getBoards,
+  pushMembersIds
 }
