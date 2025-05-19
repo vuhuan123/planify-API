@@ -102,6 +102,27 @@ const unshiftNewComment = async (cardId, commentData) => {
   } catch (error) {throw new Error(error)}
 }
 
+const updateMembers = async (cardId, incomingMemberInfor) => {
+  try {
+    let updateCon = {}
+    if (incomingMemberInfor.action === 'ADD') {
+      updateCon = { $push : { memberIds: new ObjectId(incomingMemberInfor.userId) } }
+    }
+    if (incomingMemberInfor.action === 'REMOVE') {
+      updateCon = { $pull : { memberIds: new ObjectId(incomingMemberInfor.userId) } }
+    }
+
+    const res = await getDB().collection(CARD_COLLECTION_NAME).findOneAndUpdate(
+      { _id: new ObjectId(cardId) },
+      updateCon,
+      { returnDocument: 'after' }
+    )
+    return res
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
 export const cardModel = {
   CARD_COLLECTION_NAME,
   CARD_COLLECTION_SCHEMA,
@@ -110,5 +131,6 @@ export const cardModel = {
   validaBeforeInsert,
   update,
   deleteManyByColumnId,
-  unshiftNewComment
+  unshiftNewComment,
+  updateMembers
 }

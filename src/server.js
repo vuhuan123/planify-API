@@ -9,7 +9,7 @@ import { corsOptions } from './config/cors'
 import cookieParser from 'cookie-parser'
 import socketIo from 'socket.io'
 import http from 'http'
-import {inviteUserToBoardSocket} from '../src/sockets/inviteUserToBoardSocket'
+import { inviteUserToBoardSocket } from '../src/sockets/inviteUserToBoardSocket'
 const START_SERVER = () => {
   const app = express()
 
